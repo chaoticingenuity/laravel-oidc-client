@@ -4,7 +4,7 @@
     "license": "MIT",
     "require": {
         "php": ">=8.3",
-        "maicol07/oidc-client": "^4@rc",
+        "maicol07/oidc-client": "dev-updates",
         "laravel/framework": "^11"
     },
     "require-dev": {
@@ -36,5 +36,11 @@
                 "Maicol07\\OIDCClient\\OIDCServiceProvider"
             ]
         }
-    }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "../oidc-client-php"
+        }
+    ]
 }
