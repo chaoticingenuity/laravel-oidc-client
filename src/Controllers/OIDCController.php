@@ -57,7 +57,11 @@ class OIDCController extends Controller
 
     final public function logout(Request $request): RedirectResponse
     {
-        $this->guard()->logout();
+        try {
+            $this->guard()->logout();
+        } catch (Exception $e) {
+
+        }
 
         $request->session()->invalidate();
 

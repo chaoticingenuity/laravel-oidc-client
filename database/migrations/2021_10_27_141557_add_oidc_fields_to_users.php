@@ -2,14 +2,15 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class AddOidcFieldsToUsers extends Migration
 {
     final public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $column = $table->uuid('uuid')->index();
+        Schema::table(config('oidc.users_entity_name'), function (Blueprint $table) {
+            $column = $table->uuid('uuid')->unique();
             if (Schema::hasColumn('users', 'id')) {
                 $column->after('id');
             }
@@ -19,7 +20,7 @@ class AddOidcFieldsToUsers extends Migration
 
     final public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table(config('oidc.users_entity_name'), function (Blueprint $table) {
             $table->dropColumn('uuid');
         });
     }

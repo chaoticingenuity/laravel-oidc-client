@@ -2,7 +2,7 @@
 
 A Laravel package for delegating authentication to an OpenID Provider.
 
-> This package is an heavenly modified fork of [cabinetoffice / oidc-client — Bitbucket](https://bitbucket.org/cabinetoffice/oidc-client)
+> This package is an heavily modified fork of [cabinetoffice / oidc-client — Bitbucket](https://bitbucket.org/cabinetoffice/oidc-client)
 
 ## Requirements
 
@@ -80,7 +80,7 @@ successful authentication/logout: `OIDC_REDIRECT_PATH_AFTER_LOGIN` and `OIDC_RED
 You may want to create your own `User` model. If yes, then you must extend `Maicol07\OIDCClient\User` in order to get
 auth working.
 
-Check your `auth.providers.users.model` config value: it must be set to your custom `User` model or
+Check your `auth.providers.` . `oidc.auth-provider` . `.model` config value: it must be set to your custom `User` model or
 to `Maicol07\OIDCClient\User` instead.
 
 ---

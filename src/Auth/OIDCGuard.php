@@ -70,6 +70,18 @@ class OIDCGuard extends SessionGuard
     }
 
     #[\Override]
+    final public function logout(): void
+    {
+        $id_token = $this->user()?->id_token;
+        if ($id_token !== null) {
+            $this->oidc->signOut(id_token: $id_token, back_channel_process: true);
+        }
+
+        parent::logout();
+    }
+
+
+    #[\Override]
     final public function user(): Authenticatable|User|null
     {
         if ($this->loggedOut) {

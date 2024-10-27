@@ -17,7 +17,7 @@ class OIDCUserProvider implements UserProvider
         $attrs = $user_info->attrs();
         $uuid = $attrs->pull('sub');
 
-        $user = config('auth.providers.users.model')::where('uuid', $uuid)->firstOrNew();
+        $user = config('auth.providers.' . config('oidc.auth-provider') . '.model')::where('uuid', $uuid)->firstOrNew();
         try {
             assert($user instanceof User);
         } catch (AssertionError) {
@@ -25,7 +25,7 @@ class OIDCUserProvider implements UserProvider
         }
 
         /** @noinspection UnusedFunctionResultInspection */
-        $attrs->each(fn (mixed $value, string $attr): mixed => $user->$attr = $value);
+        $attrs->each(fn(mixed $value, string $attr): mixed => $user->$attr = $value);
 
         return $user;
     }
@@ -33,7 +33,13 @@ class OIDCUserProvider implements UserProvider
     #[\Override]
     final public function retrieveById(mixed $identifier): ?User
     {
-        return null;
+        $user = config('auth.providers.' . config('oidc.auth-provider') . '.model')::find($identifier);
+        try {
+            assert($user instanceof User);
+        } catch (AssertionError) {
+            throw new AssertionError('User model must extend ' . User::class);
+        }
+        return $user;
     }
 
     #[\Override]
@@ -57,5 +63,18 @@ class OIDCUserProvider implements UserProvider
     final public function validateCredentials(Authenticatable $user, array $credentials): bool
     {
         return true;
+    }
+    /**
+     * Rehash the user's password if required and supported.
+     *
+     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
+     * @param  array  $credentials
+     * @param  bool  $force
+     * @return void
+     */
+    #[\Override]
+    final public function rehashPasswordIfRequired(Authenticatable $user, #[\SensitiveParameter] array $credentials, bool $force = false)
+    {
+        // throw new AssertionError(__CLASS__ . ':' . __FUNCTION__ . '::Not implemented');
     }
 }

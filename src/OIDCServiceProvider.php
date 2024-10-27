@@ -2,7 +2,7 @@
 
 namespace Maicol07\OIDCClient;
 
-use App\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Routing\Router;
@@ -39,7 +39,7 @@ class OIDCServiceProvider extends ServiceProvider
     final public function boot(): void
     {
         $this->publishes([
-           self::CONFIG_FILE => config_path('oidc.php'),
+            self::CONFIG_FILE => config_path('oidc.php'),
         ], 'oidc.config');
 
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
@@ -51,7 +51,7 @@ class OIDCServiceProvider extends ServiceProvider
             );
         }
 
-        Auth::extend('oidc', function (array $app): OIDCGuard {
+        Auth::extend('oidc', function (\Illuminate\Foundation\Application $app): OIDCGuard {
             $client = $this->getOIDCClient();
             $provider = new OIDCUserProvider();
             return new OIDCGuard(
@@ -71,13 +71,13 @@ class OIDCServiceProvider extends ServiceProvider
             client_secret: $config->get('client_secret'),
             provider_url: $config->get('provider_url'),
             issuer: $config->get('issuer'),
-            scopes: array_map(static fn (string $scope): Scope => Scope::from($scope), $config->get('scopes')),
+            scopes: array_map(static fn(string $scope): string => Scope::tryFrom($scope)?->value ?? $scope, $config->get('scopes')),
             redirect_uri: route('oidc.callback'),
             enable_pkce: $config->get('enable_pkce'),
             enable_nonce: $config->get('enable_nonce'),
             code_challenge_method: CodeChallengeMethod::from($config->get('code_challenge_method')),
             time_drift: $config->get('time_drift'),
-            response_types: array_map(static fn (string $type): ResponseType => ResponseType::from($type), $config->get('response_types')),
+            response_types: array_map(static fn(string $type): ResponseType => ResponseType::from($type), $config->get('response_types')),
             id_token_signing_alg_values_supported: $config->get('id_token_signing_alg_values_supported'),
             authorization_endpoint: $config->get('authorization_endpoint'),
             token_endpoint: $config->get('token_endpoint'),
@@ -88,7 +88,7 @@ class OIDCServiceProvider extends ServiceProvider
             revocation_endpoint: $config->get('revocation_endpoint'),
             jwks_endpoint: $config->get('jwks_endpoint'),
             authorization_response_iss_parameter_supported: $config->get('authorization_response_iss_parameter_supported'),
-            token_endpoint_auth_methods_supported: array_map(static fn (string $method): ClientAuthMethod => ClientAuthMethod::from($method), $config->get('token_endpoint_auth_methods_supported')),
+            token_endpoint_auth_methods_supported: array_map(static fn(string $method): ClientAuthMethod => ClientAuthMethod::from($method), $config->get('token_endpoint_auth_methods_supported')),
             http_proxy: $config->get('http_proxy'),
             cert_path: $config->get('cert_path'),
             verify_ssl: $config->get('verify'),
