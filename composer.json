@@ -40,7 +40,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "../oidc-client-php"
+            "url": "git@github.com:chaoticingenuity/oidc-client-php.git"
         }
     ]
 }
