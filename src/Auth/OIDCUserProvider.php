@@ -23,7 +23,7 @@ class OIDCUserProvider implements UserProvider
         } catch (AssertionError) {
             throw new AssertionError('User model must extend ' . User::class);
         }
-        if ($user->exists() === false) {
+        if ($user->uuid === null) {
             $user->uuid = $uuid;
         }
 
