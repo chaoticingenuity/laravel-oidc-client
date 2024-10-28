@@ -41,6 +41,7 @@ return [
     'disable_state_middleware_for_post_callback' => env('OIDC_DISABLE_STATE_MIDDLEWARE_FOR_POST_CALLBACK', false),
     'jwks' => null,
 
+    'auth-guard' => env('OIDC_AUTH_GUARD', 'web'),
     'auth-provider' => env('OIDC_AUTH_PROVIDER', 'users'),
     'users_entity_name' => env('OIDC_USERS_ENTITY_NAME', 'users') /** Table/collection name for Users model -- this will be created if necessary */ ,
 

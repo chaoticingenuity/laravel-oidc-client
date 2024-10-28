@@ -70,6 +70,6 @@ class OIDCController extends Controller
 
     private function guard(): StatefulGuard|OIDCGuard
     {
-        return Auth::guard();
+        return Auth::guard(config('oidc.auth-guard'));
     }
 }

@@ -27,6 +27,11 @@ Maicol07\OIDCClient\OIDCServiceProvider::class
 
 Edit your `config/auth.php` file to use OpenID as the authentication method for your users:
 
+The following two config settings will provide allow specific configurations for the guard and provider
+
+- OIDC_AUTH_GUARD=web
+- OIDC_AUTH_PROVIDER=users
+
 ```php
 'guards' => [
     'web' => [
