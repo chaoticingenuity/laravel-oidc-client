@@ -14,7 +14,7 @@ class AddOidcFieldsToUsers extends Migration
             if (Schema::hasColumn('users', 'id')) {
                 $column->after('id');
             }
-            $table->string('id_token')->nullable();
+            $table->text('id_token')->nullable();
         });
     }
 

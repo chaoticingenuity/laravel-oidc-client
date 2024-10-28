@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Maicol07\OIDCClient\Auth\OIDCGuard;
 
@@ -43,6 +44,20 @@ class OIDCController extends Controller
     final public function callback(Request $request): null|RedirectResponse
     {
         $user = $this->guard()->generateUser();
+
+        if (($user->exists() === false) && (config('oidc.create_new_users') === true)) {
+            if (config('oidc.users_key_field') !== null) {
+                $existing_user = config('auth.providers.' . config('oidc.auth-provider') . '.model')::where(config('oidc.users_key_field'), $user->{config('oidc.users_key_field')})->first();
+                if ($existing_user === null) {
+                } else {
+                    $existing_user->fill(json_decode(json_encode($user), true));
+                    $existing_user->save();
+                    $user = $existing_user;
+                }
+            }
+        }
+
+        $user->save();
 
         if ($this->guard()->login($user)) {
             $request->session()->regenerate();
