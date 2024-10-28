@@ -62,6 +62,23 @@ class OIDCController extends Controller
         if ($this->guard()->login($user)) {
             $request->session()->regenerate();
 
+            if (method_exists($user, config('oidc.system-user-relationship-method'))) {
+                $system_user =
+                    $user->{config('oidc.system-user-relationship-method')} ??
+                    (
+                        (
+                            (config('oidc.system-user-relationship-creation-method') !== null)
+                            && method_exists($user, config('oidc.system-user-relationship-creation-method'))
+                        )
+                        ? $user->{config('oidc.system-user-relationship-creation-method')}()
+                        : null
+                    )
+                ;
+                if ($system_user !== null) {
+                    Auth::guard()->login($system_user);
+                }
+            }
+
             return redirect()->intended(config('oidc.redirect_path_after_login'));
         }
 

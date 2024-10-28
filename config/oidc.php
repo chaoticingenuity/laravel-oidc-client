@@ -47,5 +47,8 @@ return [
 
     'create_new_users' => env('OIDC_CREATE_NEW_USERS', false) /** perist users not found in DB ? */ ,
     'claims_to_persist_on_new_user' => env('OIDC_CLAIMS_TO_PERSIST_ON_NEW_USER', 'all') /** Comma delimited list of claims to set when creating/updating user */ ,
-    'users_key_field' => env('OIDC_USERS_KEY_FIELD') /** Necessary for secondary lookup via key field ... initial lookup utilizes uuid from IDP */ ,
+    'users-key-field' => env('OIDC_USERS_KEY_FIELD') /** Necessary for lookup to system "users" model */ ,
+    'system-users-key-field' => env('OIDC_SYSTEM_USERS_KEY_FIELD') /** Necessary for lookup to system "users" model */ ,
+    'system-user-relationship-method' => env('OIDC_SYSTEM_USER_RELATIONSHIP_METHOD', 'user') /** method on oidc "users" model supporting relationship to system "users" model (a connection) */ ,
+    'system-user-relationship-creation-method' => env('OIDC_SYSTEM_USER_RELATIONSHIP_CREATION_METHOD', 'createUser') /** method on oidc "users" model supporting relationship to createsystem "users" model when needed */ ,
 ];
