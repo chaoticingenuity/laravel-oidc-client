@@ -65,7 +65,7 @@ class OIDCServiceProvider extends ServiceProvider
 
     private function getOIDCClient(): Client
     {
-        $config = config('oidc');
+        $config = collect(config('oidc'));
         return new Client(
             client_id: $config->get('client_id'),
             client_secret: $config->get('client_secret'),
