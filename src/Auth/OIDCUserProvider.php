@@ -17,18 +17,19 @@ class OIDCUserProvider implements UserProvider
         $attrs = $user_info->attrs();
         $uuid = $attrs->pull('sub');
 
-        $user = config('auth.providers.' . config('oidc.auth-provider') . '.model')::where('uuid', $uuid)->firstOrNew();
+        $user = config('auth.providers.' . config('oidc.auth-provider') . '.model')::where('uuid', $uuid)->firstOrNew(['uuid' => $uuid]);
         try {
             assert($user instanceof User);
         } catch (AssertionError) {
             throw new AssertionError('User model must extend ' . User::class);
         }
-        if ($user->uuid === null) {
-            $user->uuid = $uuid;
-        }
 
         /** @noinspection UnusedFunctionResultInspection */
-        $attrs->each(fn(mixed $value, string $attr): mixed => $user->$attr = $value);
+        // $attrs->each(fn(mixed $value, string $attr): mixed => $user->$attr = $value);
+        $attrs->each(function (mixed $value, string $attr) use ($user): mixed {
+            $user->{$attr} = $value; /** This cannot be the return result, as a $value of false will shortcut and stop processing. */
+            return true;
+        });
 
         return $user;
     }
