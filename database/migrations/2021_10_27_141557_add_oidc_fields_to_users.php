@@ -7,21 +7,49 @@ use Illuminate\Support\Facades\Schema;
 
 class AddOidcFieldsToUsers extends Migration
 {
+
     final public function up(): void
     {
-        Schema::table(config('oidc.users_entity_name'), function (Blueprint $table) {
-            $column = $table->uuid('uuid')->unique();
-            if (Schema::hasColumn('users', 'id')) {
-                $column->after('id');
+
+        if (strtolower(config('oidc.users_entity_name')) !== 'users') {
+            Schema::create(
+                config('oidc.users_entity_name'),
+
+                function (Blueprint $table) {
+                    $table->id();
+                    $table->timestamps();
+
+                    $table->string(config('oidc.users-key-field'), 50)->unique();
+                }
+            );
+        }
+
+        Schema::table(
+            config('oidc.users_entity_name'),
+
+            function (Blueprint $table) {
+                $column = $table->uuid('uuid')->unique();
+                if (Schema::hasColumn(config('oidc.users_entity_name'), 'id')) {
+                    $column->after('id');
+                }
+                $table->text('id_token')->nullable();
             }
-            $table->text('id_token')->nullable();
-        });
+        );
     }
 
     final public function down(): void
     {
-        Schema::table(config('oidc.users_entity_name'), function (Blueprint $table) {
-            $table->dropColumn('uuid');
-        });
+
+        Schema::table(
+            config('oidc.users_entity_name'),
+
+            function (Blueprint $table) {
+                $table->dropColumn('uuid');
+            }
+        );
+
+        if (strtolower(config('oidc.users_entity_name')) !== 'users') {
+            Schema::drop(config('oidc.users_entity_name'));
+        }
     }
 }
