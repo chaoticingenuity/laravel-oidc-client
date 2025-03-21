@@ -1,46 +1,46 @@
 {
-    "name": "maicol07/laravel-oidc-client",
-    "version": "1.0.0",
-    "license": "MIT",
-    "require": {
-        "php": ">=8.3",
-        "maicol07/oidc-client": "dev-updates",
-        "laravel/framework": "^11"
+  "name": "maicol07/laravel-oidc-client",
+  "version": "1.0.0",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.3",
+    "maicol07/oidc-client": "dev-updates",
+    "laravel/framework": "^11|^12"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest",
+    "rector/rector": "^1",
+    "friendsofphp/php-cs-fixer": "^3"
+  },
+  "authors": [
+    {
+      "name": "Cabinet Office Digital Development",
+      "email": "webmaster@cabinetoffice.gov.uk",
+      "role": "Creator"
     },
-    "require-dev": {
-        "roave/security-advisories": "dev-latest",
-        "rector/rector": "^1",
-        "friendsofphp/php-cs-fixer": "^3"
-    },
-    "authors": [
-        {
-            "name": "Cabinet Office Digital Development",
-            "email": "webmaster@cabinetoffice.gov.uk",
-            "role": "Creator"
-        },
-        {
-            "name": "Maicol Battistini",
-            "email": "webmaster@maicol07.it",
-            "homepage": "https://maicol07.it",
-            "role": "Maintainer"
-        }
-    ],
-    "autoload": {
-        "psr-4": {
-            "Maicol07\\OIDCClient\\": "src/"
-        }
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "Maicol07\\OIDCClient\\OIDCServiceProvider"
-            ]
-        }
-    },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "git@github.com:chaoticingenuity/oidc-client-php.git"
-        }
-    ]
+    {
+      "name": "Maicol Battistini",
+      "email": "webmaster@maicol07.it",
+      "homepage": "https://maicol07.it",
+      "role": "Maintainer"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Maicol07\\OIDCClient\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Maicol07\\OIDCClient\\OIDCServiceProvider"
+      ]
+    }
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "git@github.com:chaoticingenuity/oidc-client-php.git"
+    }
+  ]
 }
