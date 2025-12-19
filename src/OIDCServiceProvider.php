@@ -1,5 +1,4 @@
 <?php
-
 namespace Maicol07\OIDCClient;
 
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -10,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use Maicol07\OIDCClient\Auth\OIDCGuard;
 use Maicol07\OIDCClient\Auth\OIDCUserProvider;
+use Maicol07\OIDCClient\Http\Middleware\OIDCTokenRefresh;
 use Maicol07\OIDCClient\Http\OIDCStateMiddleware;
 use Maicol07\OpenIDConnect\Client;
 use Maicol07\OpenIDConnect\ClientAuthMethod;
@@ -19,31 +19,35 @@ use Maicol07\OpenIDConnect\Scope;
 
 class OIDCServiceProvider extends ServiceProvider
 {
+
     /**
      * Config file path
      */
-    private const string CONFIG_FILE = __DIR__ . '/../config/oidc.php';
+    private const string CONFIG_FILE = __DIR__.'/../config/oidc.php';
 
     /**
      * Register services.
      */
     #[\Override]
+
     final public function register(): void
     {
+
         $this->mergeConfigFrom(self::CONFIG_FILE, 'oidc');
     }
 
     /**
      * Bootstrap services.
      */
-    final public function boot(): void
+    final public function boot(Router $router): void
     {
+
         $this->publishes([
             self::CONFIG_FILE => config_path('oidc.php'),
         ], 'oidc.config');
 
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        $this->loadRoutesFrom(__DIR__.'/routes.php');
 
         if ($this->shouldEnableOIDCStateMiddleware()) {
             $this->registerOIDCStateMiddleware(
@@ -52,7 +56,7 @@ class OIDCServiceProvider extends ServiceProvider
         }
 
         Auth::extend('oidc', function (\Illuminate\Foundation\Application $app): OIDCGuard {
-            $client = $this->getOIDCClient();
+            $client   = $this->getOIDCClient();
             $provider = new OIDCUserProvider();
             return new OIDCGuard(
                 'oidc',
@@ -61,23 +65,29 @@ class OIDCServiceProvider extends ServiceProvider
                 $app['session.store']
             );
         });
+
+        // Register token refresh middleware if enabled
+        if (config('oidc.auto_refresh', true)) {
+            $router->pushMiddlewareToGroup('web', OIDCTokenRefresh::class);
+        }
     }
 
     private function getOIDCClient(): Client
     {
+
         $config = collect(config('oidc'));
         return new Client(
             client_id: $config->get('client_id'),
             client_secret: $config->get('client_secret'),
             provider_url: $config->get('provider_url'),
             issuer: $config->get('issuer'),
-            scopes: array_map(static fn(string $scope): string => Scope::tryFrom($scope)?->value ?? $scope, $config->get('scopes')),
+            scopes: array_map(static fn (string $scope): string => Scope::tryFrom($scope)?->value ?? $scope, $config->get('scopes')),
             redirect_uri: route('oidc.callback'),
             enable_pkce: $config->get('enable_pkce'),
             enable_nonce: $config->get('enable_nonce'),
             code_challenge_method: CodeChallengeMethod::from($config->get('code_challenge_method')),
             time_drift: $config->get('time_drift'),
-            response_types: array_map(static fn(string $type): ResponseType => ResponseType::from($type), $config->get('response_types')),
+            response_types: array_map(static fn (string $type): ResponseType => ResponseType::from($type), $config->get('response_types')),
             id_token_signing_alg_values_supported: $config->get('id_token_signing_alg_values_supported'),
             authorization_endpoint: $config->get('authorization_endpoint'),
             token_endpoint: $config->get('token_endpoint'),
@@ -88,7 +98,7 @@ class OIDCServiceProvider extends ServiceProvider
             revocation_endpoint: $config->get('revocation_endpoint'),
             jwks_endpoint: $config->get('jwks_endpoint'),
             authorization_response_iss_parameter_supported: $config->get('authorization_response_iss_parameter_supported'),
-            token_endpoint_auth_methods_supported: array_map(static fn(string $method): ClientAuthMethod => ClientAuthMethod::from($method), $config->get('token_endpoint_auth_methods_supported')),
+            token_endpoint_auth_methods_supported: array_map(static fn (string $method): ClientAuthMethod => ClientAuthMethod::from($method), $config->get('token_endpoint_auth_methods_supported')),
             http_proxy: $config->get('http_proxy'),
             cert_path: $config->get('cert_path'),
             verify_ssl: $config->get('verify'),
@@ -101,6 +111,7 @@ class OIDCServiceProvider extends ServiceProvider
 
     private function getWebMiddlewareGroup(Router $router): Collection
     {
+
         $groups = $router->getMiddlewareGroups();
 
         return collect($groups['web'] ?? []);
@@ -108,6 +119,7 @@ class OIDCServiceProvider extends ServiceProvider
 
     private function registerOIDCStateMiddleware(Router $router): void
     {
+
         $group = $this->getWebMiddlewareGroup($router);
         $index = $group->search(VerifyCsrfToken::class, true);
 
@@ -119,11 +131,13 @@ class OIDCServiceProvider extends ServiceProvider
 
     private function shouldEnableOIDCStateMiddleware(): bool
     {
-        $request = Request::capture();
-        $callbackPathInfo = '/' . config('oidc.provider_name') . '/' . config('oidc.callback_route_path');
+
+        $request          = Request::capture();
+        $callbackPathInfo = '/'.config('oidc.provider_name').'/'.config('oidc.callback_route_path');
 
         return !config('oidc.disable_state_middleware_for_post_callback', false)
             && strtoupper($request->method()) === 'POST'
             && $request->getPathInfo() === $callbackPathInfo;
     }
+
 }

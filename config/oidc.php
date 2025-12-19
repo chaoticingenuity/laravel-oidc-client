@@ -21,12 +21,12 @@ return [
     'code_challenge_method' => env('OIDC_CODE_CHALLENGE_METHOD', 'S256'),
     'timeout' => env('OIDC_TIMEOUT', 0),
     'time_drift' => env('OIDC_TIME_DRIFT', 300),
-    'redirect_uri' => env('OIDC_PROVIDER_NAME', 'oidc') . '/' . env('OIDC_CALLBACK_ROUTE_PATH', 'callback'),
+    'redirect_uri' => env('OIDC_PROVIDER_NAME', 'oidc').'/'.env('OIDC_CALLBACK_ROUTE_PATH', 'callback'),
     'response_types' => env('OIDC_RESPONSE_TYPES') ? explode(',', env('OIDC_RESPONSE_TYPES')) : [],
     'authorization_endpoint' => env('OIDC_AUTHORIZATION_ENDPOINT'),
     'authorization_endpoint_query_params' => json_decode(env('OIDC_AUTHORIZATION_ENDPOINT_QUERY_PARAMS', 'null'), true),
     'authorization_response_iss_parameter_supported' => env('OIDC_AUTHORIZATION_RESPONSE_ISS_PARAMETER_SUPPORTED', false),
-    'id_token_signing_alg_values_supported' => array_map(fn($algorithm) => JwtSigningAlgorithm::tryFromName($algorithm), explode(',', env('OIDC_ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED', ''))),
+    'id_token_signing_alg_values_supported' => array_map(fn ($algorithm) => JwtSigningAlgorithm::tryFromName($algorithm), explode(',', env('OIDC_ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED', ''))),
     'token_endpoint' => env('OIDC_TOKEN_ENDPOINT'),
     'token_endpoint_auth_methods_supported' => env('OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED') ? explode(',', env('OIDC_TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED')) : [],
     'userinfo_endpoint' => env('OIDC_USERINFO_ENDPOINT'),
@@ -51,4 +51,20 @@ return [
     'system-users-key-field' => env('OIDC_SYSTEM_USERS_KEY_FIELD') /** Necessary for lookup to system "users" model */ ,
     'system-user-relationship-method' => env('OIDC_SYSTEM_USER_RELATIONSHIP_METHOD', 'user') /** method on oidc "users" model supporting relationship to system "users" model (a connection) */ ,
     'system-user-relationship-creation-method' => env('OIDC_SYSTEM_USER_RELATIONSHIP_CREATION_METHOD', 'createUser') /** method on oidc "users" model supporting relationship to createsystem "users" model when needed */ ,
+
+    /**
+     * |--------------------------------------------------------------------------
+     * | Token Refresh Settings
+     * |--------------------------------------------------------------------------
+     * |
+     * | Controls automatic token refresh behavior, equivalent to the .NET
+     * | OnValidatePrincipal cookie event handler.
+     * |
+     */
+
+    // Minutes before token expiry to trigger refresh
+    'refresh_threshold' => env('OIDC_REFRESH_THRESHOLD', 30),
+
+    // Enable/disable automatic token refresh middleware
+    'auto_refresh' => env('OIDC_AUTO_REFRESH', true),
 ];

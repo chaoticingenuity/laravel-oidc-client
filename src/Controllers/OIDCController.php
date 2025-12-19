@@ -1,5 +1,4 @@
 <?php
-
 namespace Maicol07\OIDCClient\Controllers;
 
 use Exception;
@@ -17,6 +16,7 @@ use Maicol07\OIDCClient\Auth\OIDCGuard;
 
 class OIDCController extends Controller
 {
+
     use ValidatesRequests;
     use AuthorizesRequests;
     use DispatchesJobs;
@@ -28,6 +28,7 @@ class OIDCController extends Controller
      */
     public function __construct()
     {
+
     }
 
     /**
@@ -35,6 +36,7 @@ class OIDCController extends Controller
      */
     final public function login(): RedirectResponse
     {
+
         return redirect()->away($this->guard()->getAuthorizationUrl());
     }
 
@@ -43,7 +45,11 @@ class OIDCController extends Controller
      */
     final public function callback(Request $request): null|RedirectResponse
     {
-        $user = $this->guard()->generateUser();
+
+        /** @var OIDCGuard $guard */
+        $guard = $this->guard();
+
+        $user = $guard->generateUser();
 
         if (($user->exists() === false) && (config('oidc.create_new_users') === true)) {
             if (config('oidc.users_key_field') !== null) {
@@ -59,7 +65,10 @@ class OIDCController extends Controller
 
         $user->save();
 
-        if ($this->guard()->login($user)) {
+        // Get tokens from the OIDC client and store them
+        $this->storeTokensFromClient($guard);
+
+        if ($guard->login($user)) {
             $request->session()->regenerate();
 
             if (method_exists($user, config('oidc.system-user-relationship-method'))) {
@@ -87,8 +96,92 @@ class OIDCController extends Controller
         ]);
     }
 
+    /**
+     * Extract and store tokens from the OIDC client after authentication
+     */
+    protected function storeTokensFromClient(OIDCGuard $guard): void
+    {
+
+        $client = $guard->getClient();
+
+        // The Token trait stores these after authenticate() is called
+        // Access them via the client's properties
+        $tokens = [
+            'access_token' => $client->getAccessToken() ?? null,
+            'refresh_token' => $client->getRefreshToken() ?? null,
+            'id_token' => $client->getIdToken() ?? null,
+            'expires_in' => $this->getExpiresInFromClient($client),
+        ];
+
+        // Only store if we have an access token
+        if (!empty($tokens['access_token'])) {
+            $guard->storeTokens($tokens);
+        }
+    }
+
+    /**
+     * Get token expiration time from client
+     */
+    protected function getExpiresInFromClient($client): int
+    {
+
+        // Option 1: If your client has a direct method
+        if (method_exists($client, 'getAccessTokenExpiresIn')) {
+            return $client->getAccessTokenExpiresIn();
+        }
+
+        // Option 2: If your client exposes expires_in from the token response
+        if (method_exists($client, 'getTokenResponse')) {
+            $response = $client->getTokenResponse();
+            if (isset($response['expires_in'])) {
+                return (int) $response['expires_in'];
+            }
+        }
+
+        // Option 3: Parse from ID token exp claim
+        $idToken = $client->getIdToken() ?? null;
+        if ($idToken) {
+            $expiresIn = $this->parseExpiresInFromJwt($idToken);
+            if ($expiresIn !== null) {
+                return $expiresIn;
+            }
+        }
+
+        // Default to 1 hour
+        return 3600;
+    }
+
+    /**
+     * Parse expires_in from JWT token
+     */
+    protected function parseExpiresInFromJwt(string $jwt): ?int
+    {
+
+        $parts = explode('.', $jwt);
+        if (count($parts) !== 3) {
+            return null;
+        }
+
+        try {
+            $payload = json_decode(
+                base64_decode(strtr($parts[1], '-_', '+/')),
+                true
+            );
+
+            if (isset($payload['exp'])) {
+                $expiresIn = $payload['exp'] - time();
+                return max(0, $expiresIn);
+            }
+        } catch (\Exception $e) {
+            // Ignore parse errors
+        }
+
+        return null;
+    }
+
     final public function logout(Request $request): RedirectResponse
     {
+
         try {
             $this->guard()->logout();
         } catch (Exception $e) {
@@ -102,6 +195,8 @@ class OIDCController extends Controller
 
     private function guard(): StatefulGuard|OIDCGuard
     {
+
         return Auth::guard(config('oidc.auth-guard'));
     }
+
 }
